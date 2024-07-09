@@ -312,23 +312,38 @@ export function usePaydockPayment() {
             headers: headers
         });
         let currentCart = await response.json();
+        let updateCardActions = [
+            {
+                action: "addPayment",
+                payment: {
+                    typeId: "payment",
+                    id: payment.id
+                }
+            }
+        ];
+        if(currentCart.lineItems) {
+            currentCart.lineItems.forEach((lineItem) => {
+                updateCardActions.push(
+                    {
+                        action: "setLineItemInventoryMode",
+                        lineItemId: lineItem.id,
+                        inventoryMode: "TrackOnly"
+                    }
+                );
+            });
+        }
+
         response = await fetchWithToken(`${config.ct.api}/${config.ct.auth.projectKey}/carts/${cartId}`, {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({
                 version: currentCart.version,
-                actions: [
-                    {
-                        action: "addPayment",
-                        payment: {
-                            typeId: "payment",
-                            id: payment.id
-                        }
-                    }
-                ]
+                actions: updateCardActions
             }),
         });
         currentCart = await response.json();
+        console.log(currentCart);
+
         await fetchWithToken(`${config.ct.api}/${config.ct.auth.projectKey}/orders`, {
             method: 'POST',
             headers: {
