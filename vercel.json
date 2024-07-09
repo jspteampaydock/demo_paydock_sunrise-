@@ -1,7 +1,7 @@
 {
   "version": 2,
   "public": true,
-  "alias": "demo-paydock-sunrise",
+  "alias": "demo-paydock-s",
   "builds": [
     { "src": "package.json", "use": "@now/static-build" }
   ],
