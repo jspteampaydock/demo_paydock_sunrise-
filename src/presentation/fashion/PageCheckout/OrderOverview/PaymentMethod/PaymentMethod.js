@@ -1,7 +1,7 @@
 import { onMounted, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import PaydockCheckout from 'presentation/PaydockCheckout/PaydockCheckout.vue';
+import PowerboardCheckout from 'presentation/PowerboardCheckout/PowerboardCheckout.vue';
 
 let paymentMethods = [
   {
@@ -18,7 +18,7 @@ export default {
     },
   },
   components:{
-    PaydockCheckout
+    PowerboardCheckout
   },
   setup(props, { emit }) {
     onMounted(() => emit('card-paid'));
