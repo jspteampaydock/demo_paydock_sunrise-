@@ -190,6 +190,7 @@ export default {
                     if ((paymentMethod.type === 'apple-pay' && !isApple) || (paymentMethod.type === 'google-pay' && isApple)) return;
                     Object.entries(paymentMethod.config).forEach(([key, value]) => {
                         if (key.includes('use_on_checkout') && value === 'Yes') {
+                            console.log(paymentMethod);
                             initPowerboardCheckout(paymentMethod, powerboardStore, configuration, PowerboardCommercetoolsWidget);
                         }
                     });
