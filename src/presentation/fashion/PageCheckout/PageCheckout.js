@@ -7,9 +7,9 @@ import {useI18n} from 'vue-i18n';
 import {useRouter} from 'vue-router';
 import useCart from 'hooks/useCart';
 import useCartTools from 'hooks/useCartTools';
-import * as powerboardStore from 'presentation/PowerboardCheckout/PowerboardStore';
-import {usePowerboardPayment} from "presentation/PowerboardCheckout/PowerboardUsePayment";
-import {powerboardMapperDataHelper} from "presentation/PowerboardCheckout/PowerboardMapperDataHelper";
+import * as paydockStore from 'presentation/PaydockCheckout/PaydockStore';
+import {usePaydockPayment} from "presentation/PaydockCheckout/PaydockUsePayment";
+import {paydockMapperDataHelper} from "presentation/PaydockCheckout/PaydockMapperDataHelper";
 
 export default {
     components: {
@@ -49,22 +49,22 @@ export default {
                 })
 
 
-                const {powerboardConvertAddress, powerboardConvertCartItems} = powerboardMapperDataHelper();
-                for (let paymentMethodKey in powerboardStore) {
-                    //check if payment method is wallet or apm
+                //update info in all payment methodes
+                const {paydockConvertAddress, paydockConvertCartItems} = paydockMapperDataHelper();
+                for (let paymentMethodKey in paydockStore) {
+                     //check if payment method is wallet or apm
                     if (
-                        powerboardStore[paymentMethodKey]?.wallets?.includes(powerboardStore[paymentMethodKey]?.type)
-                        || powerboardStore[paymentMethodKey]?.apims?.includes(powerboardStore[paymentMethodKey]?.type)
+                        paydockStore[paymentMethodKey]?.wallets?.includes(paydockStore[paymentMethodKey]?.type)
+                        || paydockStore[paymentMethodKey]?.apims?.includes(paydockStore[paymentMethodKey]?.type)
                     ) {
-                        powerboardStore[paymentMethodKey].setRefernce(cart.value?.cartId);
-                        powerboardStore[paymentMethodKey].setBillingInfo(powerboardConvertAddress(billingAddress.value));
-                        powerboardStore[paymentMethodKey].setShippingInfo(powerboardConvertAddress(shippingAddress.value));
-
+                        paydockStore[paymentMethodKey].setRefernce(cart.value?.cartId);
+                        paydockStore[paymentMethodKey].setBillingInfo(paydockConvertAddress(billingAddress.value));
+                        paydockStore[paymentMethodKey].setShippingInfo(paydockConvertAddress(shippingAddress.value));
                         if (cart.value?.lineItems?.length) {
-                            powerboardStore[paymentMethodKey].setCartItems(powerboardConvertCartItems(cart.value.lineItems));
+                            paydockStore[paymentMethodKey].setCartItems(paydockConvertCartItems(cart.value.lineItems));
                         }
 
-                        powerboardStore[paymentMethodKey].setIsValidForm(validBillingForm.value && validShippingForm.value)
+                        paydockStore[paymentMethodKey].setIsValidForm(validBillingForm.value && validShippingForm.value)
                     }
                 }
             }, 500)
@@ -117,50 +117,49 @@ export default {
                 })
                 .then(() => {
                         if (
-                            (powerboardStore?.PaymentMethod !== null && !['card', 'paypal'].includes(powerboardStore?.PaymentMethod))
+                            paydockStore?.PaymentMethod !== null && !['card', 'paypal'].includes(paydockStore?.PaymentMethod)
                         ) {
+                            paymentMethod.value = paydockStore?.PaymentMethod;
+                            if (paymentMethod.value === 'paydock-pay-card') {
+                                const {createPaymentViaPaydockCard, redirectToThankYouPage} = usePaydockPayment();
 
-                            paymentMethod.value = powerboardStore?.PaymentMethod;
-
-                            if (paymentMethod.value === 'powerboard-pay-card') {
-                                const {createPaymentViaPowerboardCard, redirectToThankYouPage} = usePowerboardPayment();
-                                if (powerboardStore?.powerboardpaycardGetWidget) {
-                                    powerboardStore?.powerboardpaycardWidgetInstance.setAdditionalValue(billingAddress);
-                                    if (powerboardStore?.powerboardpaycardWidgetInstance.hasVaultToken()) {
-                                        powerboardStore?.powerboardpaycardWidgetInstance.setSpinner();
-                                        createPaymentViaPowerboardCard(cart)
+                                if (paydockStore?.paydockpaycardGetWidget) {
+                                    paydockStore?.paydockpaycardWidgetInstance.setAdditionalValue(billingAddress);
+                                    if (paydockStore?.paydockpaycardWidgetInstance.hasVaultToken()) {
+                                        paydockStore?.paydockpaycardWidgetInstance.setSpinner();
+                                        createPaymentViaPaydockCard(cart)
                                             .then(() => {
                                                 redirectToThankYouPage(router)
                                             }).catch(() => {
-                                            powerboardStore?.powerboardpaycardWidgetInstance.setSpinner('#' + paymentMethod.value);
-                                            powerboardStore?.powerboardpaycardGetWidget.reload();
+                                            paydockStore?.paydockpaycardWidgetInstance.setSpinner('#' + paymentMethod.value);
+                                            paydockStore?.paydockpaycardGetWidget.reload();
                                             return Promise.resolve();
                                         });
                                     } else {
-                                        powerboardStore?.powerboardpaycardGetWidget.trigger('submit_form');
-                                        powerboardStore?.powerboardpaycardGetWidget.on('finish', function () {
-                                            powerboardStore?.powerboardpaycardWidgetInstance.setSpinner();
-                                            createPaymentViaPowerboardCard(cart)
+                                        paydockStore?.paydockpaycardGetWidget.trigger('submit_form');
+                                        paydockStore?.paydockpaycardGetWidget.on('finish', function () {
+                                            paydockStore?.paydockpaycardWidgetInstance.setSpinner();
+                                            createPaymentViaPaydockCard(cart)
                                                 .then(() => {
                                                     redirectToThankYouPage(router)
                                                 }).catch(() => {
-                                                powerboardStore?.powerboardpaycardWidgetInstance.setSpinner('#' + paymentMethod.value);
-                                                powerboardStore?.powerboardpaycardGetWidget.reload();
+                                                paydockStore?.paydockpaycardWidgetInstance.setSpinner('#' + paymentMethod.value);
+                                                paydockStore?.paydockpaycardGetWidget.reload();
                                                 return Promise.resolve();
                                             });
                                         });
                                     }
                                 }
                             }
-                            if (['powerboard-pay-zippay', 'powerboard-pay-afterpay_v1'].includes(paymentMethod.value)) {
-                                const {createPaymentViaAPIMSPowerboard, redirectToThankYouPage} = usePowerboardPayment();
+                            if (['paydock-pay-zippay', 'paydock-pay-afterpay_v1'].includes(paymentMethod.value)) {
+                                const {createPaymentViaAPIMSPaydock, redirectToThankYouPage} = usePaydockPayment();
                                 const widgetInstances = {
-                                    'powerboard-pay-zippay': powerboardStore?.paydockpayzippayWidgetInstance,
-                                    'powerboard-pay-afterpay_v1': powerboardStore?.paydockpayafterpay_v1WidgetInstance
+                                    'paydock-pay-zippay': paydockStore?.paydockpayzippayWidgetInstance,
+                                    'paydock-pay-afterpay_v1': paydockStore?.paydockpayafterpay_v1WidgetInstance
                                 };
                                 const widgetInstance = widgetInstances[paymentMethod.value];
                                 if (widgetInstance) widgetInstance.setSpinner('#' + paymentMethod.value);
-                                createPaymentViaAPIMSPowerboard(cart, paymentMethod.value)
+                                createPaymentViaAPIMSPaydock(cart, paymentMethod.value)
                                     .then(() => {
                                         redirectToThankYouPage(router)
                                     }).catch((e) => {
@@ -168,16 +167,15 @@ export default {
                                     showError.value = true;
                                 });
                             }
-                            if (['powerboard-pay-paypal_smart', 'powerboard-pay-google-pay', 'powerboard-pay-afterpay_v2'].includes(paymentMethod.value)) {
-                                const {createPaymentViaPowerboardWallets, redirectToThankYouPage} = usePowerboardPayment();
-                                createPaymentViaPowerboardWallets(cart, paymentMethod.value)
+                            if (['paydock-pay-paypal_smart', 'paydock-pay-google-pay', 'paydock-pay-afterpay_v2'].includes(paymentMethod.value)) {
+                                const {createPaymentViaPaydockWallets, redirectToThankYouPage} = usePaydockPayment();
+                                createPaymentViaPaydockWallets(cart, paymentMethod.value)
                                     .then(() => {
                                         redirectToThankYouPage(router)
                                     }).catch(() => {
                                     return Promise.resolve();
                                 });
                             }
-
                         } else {
                             router.push({
                                 name: 'pay',

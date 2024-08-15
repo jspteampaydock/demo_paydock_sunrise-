@@ -33,7 +33,7 @@
       </div>
     </div>
 
-    <PowerboardCheckout/>
+    <PaydockCheckout/>
 
   </span>
 </template>

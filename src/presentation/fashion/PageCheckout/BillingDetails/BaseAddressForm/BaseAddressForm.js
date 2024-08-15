@@ -39,10 +39,10 @@ export default {
 
     const searchCountries = computed(() => {
       return countries.value.filter(country =>
-        country.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+          country.name.toLowerCase().includes(searchQuery.value.toLowerCase())
       );
     });
-  
+
     const fetchCountries = async () => {
       try {
         countries.value = countryList.map(country => ({
@@ -54,18 +54,18 @@ export default {
       }
     };
 
-    fetchCountries(); 
+    fetchCountries();
 
     v.value.$touch();
     watch(
-      form,
-      (form) => {
-        emit(
-          'update-address',
-          JSON.parse(JSON.stringify(form))
-        );
-      },
-      { deep: true }
+        form,
+        (form) => {
+          emit(
+              'update-address',
+              JSON.parse(JSON.stringify(form))
+          );
+        },
+        { deep: true }
     );
     const validForm = computed(() => {
       return !v.value.$invalid;
@@ -74,15 +74,15 @@ export default {
       emit('valid-form', validForm);
     });
 
-    return { 
-      t, 
-      form, 
-      validForm, 
-      v, 
-      countries, 
-      selectedCountry, 
-      selectCountry, 
-      isOpen, 
+    return {
+      t,
+      form,
+      validForm,
+      v,
+      countries,
+      selectedCountry,
+      selectCountry,
+      isOpen,
       toggleCountry,
       searchQuery,
       searchCountries
