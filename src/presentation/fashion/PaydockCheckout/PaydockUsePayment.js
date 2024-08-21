@@ -342,7 +342,6 @@ export function usePaydockPayment() {
             }),
         });
         currentCart = await response.json();
-        console.log(currentCart);
 
         await fetchWithToken(`${config.ct.api}/${config.ct.auth.projectKey}/orders`, {
             method: 'POST',

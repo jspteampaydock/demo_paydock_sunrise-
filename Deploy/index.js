@@ -21,7 +21,5 @@ app.get("*", function(req, res) {
 // Start server
 app.listen(PORT, function() {
   // eslint-disable-next-line no-console
-  console.log(
-    `Server up and running on ${PORT}`
-  );
+
 });
