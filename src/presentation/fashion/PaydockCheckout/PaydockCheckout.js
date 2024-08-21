@@ -103,7 +103,9 @@ export default {
         }
 
         const getPaydockPaymentsConfiguration = async () => {
-
+            if(paydockStore.paymentId){
+                return;
+            }
             let paydockPaymentConfigurations = {};
             // let fraction = 10 ** cart.value.totalPrice.fractionDigits;
             let currencyCode = cart.value.totalPrice.currencyCode;
