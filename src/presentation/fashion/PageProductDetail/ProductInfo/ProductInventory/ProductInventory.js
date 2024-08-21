@@ -3,11 +3,9 @@ import config from "../../../../../../sunrise.config";
 
 
 async function getInventoryBySku(sku) {
-    console.log(sku);
     const apiUrl = `${config.ct.api}/${config.ct.auth.projectKey}/inventory`;
     const queryParam = 'sku="' + sku + '"';
     const queryString = `?where=${encodeURIComponent(queryParam)}&limit=1`;
-    console.log(apiUrl + queryString);
 
     try {
         let headers = {'Content-Type': 'application/json'};
