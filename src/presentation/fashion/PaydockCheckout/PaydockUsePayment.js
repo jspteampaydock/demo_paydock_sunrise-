@@ -143,6 +143,7 @@ export function usePaydockPayment() {
         if (!response.success) return false
 
         const vaultToken = await paydockStore?.paydockpaycardWidgetInstance.getVaultToken();
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         if (response.charge3dsId !== undefined) {
             additionalInfo.charge3dsId = response.charge3dsId;
