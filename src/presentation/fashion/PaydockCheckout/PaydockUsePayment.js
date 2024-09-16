@@ -143,7 +143,7 @@ export function usePaydockPayment() {
         if (!response.success) return false
 
         const vaultToken = await paydockStore?.paydockpaycardWidgetInstance.getVaultToken();
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 5000));
 
         if (response.charge3dsId !== undefined) {
             additionalInfo.charge3dsId = response.charge3dsId;
@@ -227,7 +227,7 @@ export function usePaydockPayment() {
                 body: JSON.stringify(data)
             });
 
-            if (response.status === 409) {
+            if (response.status === 409 || response.status === 400) {
                 const error = await response.json();
                 if (error.errors[0].code === 'ConcurrentModification') {
                     data.version = error.errors[0].currentVersion;
