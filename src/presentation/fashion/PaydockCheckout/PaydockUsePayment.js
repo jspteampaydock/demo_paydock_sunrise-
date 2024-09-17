@@ -278,8 +278,10 @@ export function usePaydockPayment() {
             actions: [
                 {
                     action: "setCustomField",
-                    name: "makePaymentRequest",
+                    name: "PaymentExtensionRequest",
                     value: JSON.stringify({
+                        action: "makePaymentRequest",
+                        request: {
                         orderId: reference,
                         paymentId: paymentId,
                         amount: {
@@ -293,8 +295,8 @@ export function usePaydockPayment() {
                         SaveCard: saveCard,
                         VaultToken: vaultToken,
                         AdditionalInfo: additionalInfo
-                    })
-                }
+                    }
+                })}
             ]
         };
 
