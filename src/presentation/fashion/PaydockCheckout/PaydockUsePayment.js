@@ -219,7 +219,8 @@ export function usePaydockPayment() {
         });
     };
 
-    async function retryUpdatePayment(url, headers, data, retries = 3) {
+    async function retryUpdatePayment(headers, data, retries = 3) {
+        const url = `${config.ct.api}/${config.ct.auth.projectKey}/payments/${paydockStore?.paymentId}`;
         for (let i = 0; i < retries; i++) {
             const response = await fetchWithToken(url, {
                 method: 'POST',
@@ -227,14 +228,27 @@ export function usePaydockPayment() {
                 body: JSON.stringify(data)
             });
 
-            if (response.status === 409 || response.status === 400) {
+            if (response.status === 409) {
                 const error = await response.json();
                 if (error.errors[0].code === 'ConcurrentModification') {
                     data.version = error.errors[0].currentVersion;
                 } else {
                     return null;
                 }
-            } else {
+            }else if(response.status === 400){
+                let expectedVersion;
+                if (response.message.includes("has a different version than expected")) {
+                    const match = response.message.match(/Expected: (\d+)/);
+                    if (match) {
+                        expectedVersion = parseInt(match[1], 10);
+                    }
+                }
+                if (expectedVersion) {
+                    data.version = expectedVersion;
+                } else {
+                    return null;
+                }
+            }else {
                 return response;
             }
         }
@@ -255,12 +269,8 @@ export function usePaydockPayment() {
                                      saveCard,
                                      additionalInfo
                                  }) {
-        let currentPaymentUrl = `${config.ct.api}/${config.ct.auth.projectKey}/payments/${paymentId}`;
-        let response = await fetchWithToken(currentPaymentUrl, {
-            method: 'GET',
-            headers: headers
-        });
-        let currentPayment = await response.json();
+
+        const currentPayment = await getActualPayment()
         const reference = paymentId;
         const updateData = {
             version: currentPayment.version,
@@ -287,7 +297,7 @@ export function usePaydockPayment() {
             ]
         };
 
-        response = await retryUpdatePayment(currentPaymentUrl, headers, updateData);
+        let response = await retryUpdatePayment(headers, updateData);
         if (!response) {
             return Promise.reject("Invalid Transaction Details");
         }
@@ -358,7 +368,14 @@ export function usePaydockPayment() {
             }),
         });
     }
-
+    async function getActualPayment() {
+        let currentPaymentUrl = `${config.ct.api}/${config.ct.auth.projectKey}/payments/${paydockStore?.paymentId}`;
+        const response = await fetchWithToken(currentPaymentUrl, {
+            method: 'GET',
+            headers: {'Content-Type': 'application/json'}
+        });
+        return await response.json();
+    }
 
     async function getAdditionalInfoByCart(cart, chargeId, paymentId, paymentType) {
         let billingAddress = cart.value.billingAddress;
@@ -407,12 +424,7 @@ export function usePaydockPayment() {
     }
 
     async function redirectToThankYouPage(router) {
-        let currentPaymentUrl = `${config.ct.api}/${config.ct.auth.projectKey}/payments/${paydockStore?.paymentId}`;
-        const response = await fetchWithToken(currentPaymentUrl, {
-            method: 'GET',
-            headers: {'Content-Type': 'application/json'}
-        });
-        let currentPayment = await response.json();
+        const currentPayment = await getActualPayment()
         let selectedPaymentMethod = paydockStore?.PaymentMethod;
 
         let orderStatusInReview = currentPayment.custom.fields.PaydockPaymentStatus === 'paydock-pending' ? 'yes' : 'no'
