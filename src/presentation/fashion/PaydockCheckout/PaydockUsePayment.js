@@ -237,8 +237,9 @@ export function usePaydockPayment() {
                 }
             }else if(response.status === 400){
                 let expectedVersion;
-                if (response.message.includes("has a different version than expected")) {
-                    const match = response.message.match(/Expected: (\d+)/);
+                const error = await response.json();
+                if (error.message.includes("has a different version than expected")) {
+                    const match = error.message.match(/Expected: (\d+)/);
                     if (match) {
                         expectedVersion = parseInt(match[1], 10);
                     }
