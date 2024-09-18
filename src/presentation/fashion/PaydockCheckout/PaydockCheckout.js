@@ -182,7 +182,6 @@ export default {
             const configuration = await getPaydockPaymentsConfiguration();
             const platformName = platform.os.family; 
             const isApple = platformName === 'OS X' || platformName === 'iOS'|| platformName === 'iPadOS';
-
             if (configuration && configuration.payment_methods) {
                 Object.values(configuration?.payment_methods).forEach(paymentMethod => {
                     if ((paymentMethod.type === 'apple-pay' && !isApple) || (paymentMethod.type === 'google-pay' && isApple)) return;
